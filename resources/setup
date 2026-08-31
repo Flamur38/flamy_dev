@@ -18,7 +18,7 @@ echo "[+] Preparing workspace"
 mkdir -p "$HOME/personal"
 
 if [ ! -d "$DEV_DIR" ]; then
-    git clone https://github.com/Flamur38/dev "$DEV_DIR"
+    git clone https://github.com/Flamur38/flamy_dev "$DEV_DIR"
 else
     echo "[!] Repo already exists, pulling updates"
     git -C "$DEV_DIR" pull

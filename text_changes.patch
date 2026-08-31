@@ -1,0 +1,52 @@
+diff --git a/resources/setup b/resources/setup
+index 3711800..1e5805a 100755
+--- a/resources/setup
++++ b/resources/setup
+@@ -18,7 +18,7 @@ echo "[+] Preparing workspace"
+ mkdir -p "$HOME/personal"
+ 
+ if [ ! -d "$DEV_DIR" ]; then
+-    git clone https://github.com/Flamur38/dev "$DEV_DIR"
++    git clone https://github.com/Flamur38/flamy_dev "$DEV_DIR"
+ else
+     echo "[!] Repo already exists, pulling updates"
+     git -C "$DEV_DIR" pull
+diff --git a/run b/run
+index c70b310..08330ca 100755
+--- a/run
++++ b/run
+@@ -24,7 +24,6 @@ grep=""
+ dry_run="0"
+ 
+ while [[ $# -gt 0 ]]; do
+-    echo "ARG: \"$1\""  # Debug: print each argument as it's parsed
+     case "$1" in
+         --dry|--dry-run)
+             dry_run="1"
+@@ -63,10 +62,9 @@ runs_dir=$(find "$script_dir/runs" -mindepth 1 -maxdepth 1 -type f -executable)
+ for s in $runs_dir; do
+     name="$(basename "$s")"  # e.g. "terminal", "neovim", "zsh"
+ 
+-    # If a grep filter was given, skip scripts that don't match it.
+-    # grep -q = quiet mode (no output, just exit code).
+-    if [[ -n "$grep" ]] && ! echo "$name" | grep -q "$grep"; then
+-        log "grep \"$grep\" filtered out $s"
++    # If a filter was given, only run the script whose filename matches it exactly.
++    if [[ -n "$grep" ]] && [[ "$name" != "$grep" ]]; then
++        log "\"$grep\" != $name, skipping"
+         continue  # Skip to next script
+     fi
+ 
+@@ -77,10 +75,8 @@ for s in $runs_dir; do
+         "$s"
+     fi
+ 
+-    # If a grep filter matched, stop after the first match.
+-    # This makes "./run terminal" run only "terminal", not "terminator" too.
+-    # NOTE: currently "terminal" grep would still match "terminator" —
+-    # consider using exact matching (name == grep) if that's a problem.
++    # A filter always matches at most one script (exact name match), so
++    # stop looping once we've run it.
+     if [[ -n "$grep" ]]; then
+         break
+     fi

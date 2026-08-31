@@ -1,0 +1,16 @@
+# Editor / shell backups
+*.bak
+*.orig
+*.swp
+
+# Python
+__pycache__/
+*.pyc
+
+# Downloaded/prebuilt binaries — installed by runs/security_tools instead
+# of being vendored, so they shouldn't land in git.
+env/tools/chainsaw/chainsaw
+env/tools/chainsaw/chainsaw_*
+
+# OS cruft
+.DS_Store

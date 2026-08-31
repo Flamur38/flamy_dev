@@ -24,7 +24,6 @@ grep=""
 dry_run="0"
 
 while [[ $# -gt 0 ]]; do
-    echo "ARG: \"$1\""  # Debug: print each argument as it's parsed
     case "$1" in
         --dry|--dry-run)
             dry_run="1"
@@ -63,10 +62,9 @@ runs_dir=$(find "$script_dir/runs" -mindepth 1 -maxdepth 1 -type f -executable)
 for s in $runs_dir; do
     name="$(basename "$s")"  # e.g. "terminal", "neovim", "zsh"
 
-    # If a grep filter was given, skip scripts that don't match it.
-    # grep -q = quiet mode (no output, just exit code).
-    if [[ -n "$grep" ]] && ! echo "$name" | grep -q "$grep"; then
-        log "grep \"$grep\" filtered out $s"
+    # If a filter was given, only run the script whose filename matches it exactly.
+    if [[ -n "$grep" ]] && [[ "$name" != "$grep" ]]; then
+        log "\"$grep\" != $name, skipping"
         continue  # Skip to next script
     fi
 
@@ -77,10 +75,8 @@ for s in $runs_dir; do
         "$s"
     fi
 
-    # If a grep filter matched, stop after the first match.
-    # This makes "./run terminal" run only "terminal", not "terminator" too.
-    # NOTE: currently "terminal" grep would still match "terminator" —
-    # consider using exact matching (name == grep) if that's a problem.
+    # A filter always matches at most one script (exact name match), so
+    # stop looping once we've run it.
     if [[ -n "$grep" ]]; then
         break
     fi
