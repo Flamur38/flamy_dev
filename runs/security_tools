@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+set -e
+
+# ---- colors ----
+cyan="\e[1;36m"
+yellow="\e[1;33m"
+reset="\e[0m"
+
+PREFIX="security_tools"
+
+
+log() {
+  echo -e "\n${cyan}[${PREFIX}]${reset} ${cyan}$1${reset}"
+}
+
+warn() {
+  echo -e "${yellow}[${PREFIX}]${reset} ${yellow}$1${reset}"
+}
+
+
+# ----------------------------------------
+# Update system
+# ----------------------------------------
+log "Updating package index"
+sudo apt update
+
+# ----------------------------------------
+# Core networking & investigation utilities
+# ----------------------------------------
+log "Installing core security utilities"
+sudo apt install -y \
+  tcpdump \
+  nmap \
+  netcat-openbsd \
+  socat \
+  jq \
+  whois \
+  dnsutils
+
+# ----------------------------------------
+# Zeek (not available on Ubuntu 24.04)
+# ----------------------------------------
+warn "Skipping Zeek install (not available on Ubuntu 24.04)"
+
+# ----------------------------------------
+# Blue-team defensive tools
+# ----------------------------------------
+log "Installing blue-team defensive tools"
+sudo apt install -y \
+  suricata \
+  auditd \
+  fail2ban \
+  scalpel \
+  steghide \
+  rsyslog \
+  logrotate \
+  sysstat \
+  htop \
+  lsof \
+  strace \
+  inotify-tools \
+  wireshark \
+  snort
+
+# ----------------------------------------
+# Pentesting tools (CLI)
+# ----------------------------------------
+log "Installing pentesting tools"
+sudo apt install -y \
+  hydra \
+  gobuster \
+  nikto \
+  sqlmap \
+  wfuzz \
+  smbclient \
+
+
+
+# ----------------------------------------
+# Malware & file analysis tools
+# ----------------------------------------
+log "Installing malware & file analysis tools"
+sudo apt install -y \
+  yara \
+  exiftool \
+  binwalk \
+  binutils
+
+# ----------------------------------------
+# Snap packages
+# ----------------------------------------
+log "Installing Snap packages"
+sudo snap install volatility-phocean
+# sudo snap install autopsy
+sudo snap install crackmapexec
+sudo snap install metasploit-framework
+#sudo snap install powershell 
+log "Security tools installation completed"
+
+echo -e "\e[1;32m[security_tools] DONE\e[0m"
+
+
+# ----------------------------------------
+# Chainsaw (EVTX threat hunting)
+# ----------------------------------------
+log "Installing Chainsaw (pre-built binary)"
+
+CHAINSAW_DIR="$HOME/tools/chainsaw"
+CHAINSAW_ZIP="$HOME/tools/chainsaw_all_platforms+rules+examples.zip"
+
+mkdir -p "$HOME/tools"
+
+wget -q https://github.com/WithSecureLabs/chainsaw/releases/latest/download/chainsaw_all_platforms+rules+examples.zip \
+  -O "$CHAINSAW_ZIP"
+
+unzip -q "$CHAINSAW_ZIP" -d "$HOME/tools/"
+
+chmod +x "$CHAINSAW_DIR/chainsaw_x86_64-unknown-linux-gnu"
+sudo cp "$CHAINSAW_DIR/chainsaw_x86_64-unknown-linux-gnu" /usr/local/bin/chainsaw
+
+rm "$CHAINSAW_ZIP"
+
+warn "Chainsaw rules:    $CHAINSAW_DIR/rules"
+warn "Sigma rules:       $CHAINSAW_DIR/sigma"
+warn "Mappings:          $CHAINSAW_DIR/mappings"
+warn "EVTX samples:      $CHAINSAW_DIR/EVTX-ATTACK-SAMPLES"

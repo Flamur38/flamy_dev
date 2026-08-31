@@ -1,0 +1,90 @@
+<svg width="3840" height="2560" viewBox="0 0 3840 2560" xmlns="http://www.w3.org/2000/svg">
+<rect width="3840" height="2560" fill="#0d1117"/>
+
+<!-- dot grid -->
+<defs>
+  <pattern id="dotgrid" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+    <circle cx="30" cy="30" r="1.2" fill="#161b22"/>
+  </pattern>
+</defs>
+<rect width="3840" height="2560" fill="url(#dotgrid)"/>
+
+<!-- full screen cross hairs -->
+<line x1="0" y1="1280" x2="3840" y2="1280" stroke="#161b22" stroke-width="1"/>
+<line x1="1920" y1="0" x2="1920" y2="2560" stroke="#161b22" stroke-width="1"/>
+
+<!-- outer radar rings -->
+<circle cx="1920" cy="1280" r="1000" fill="none" stroke="#161b22" stroke-width="1"/>
+<circle cx="1920" cy="1280" r="800"  fill="none" stroke="#161b22" stroke-width="1"/>
+<circle cx="1920" cy="1280" r="600"  fill="none" stroke="#161b22" stroke-width="1"/>
+<circle cx="1920" cy="1280" r="400"  fill="none" stroke="#161b22" stroke-width="1"/>
+<circle cx="1920" cy="1280" r="200"  fill="none" stroke="#161b22" stroke-width="1"/>
+<!-- accent ring -->
+<circle cx="1920" cy="1280" r="1000" fill="none" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="10 10" opacity="0.3"/>
+
+<!-- diagonal guide lines -->
+<line x1="1920" y1="1280" x2="2848" y2="352"  stroke="#161b22" stroke-width="0.8" opacity="0.6"/>
+<line x1="1920" y1="1280" x2="992"  y2="352"  stroke="#161b22" stroke-width="0.8" opacity="0.6"/>
+<line x1="1920" y1="1280" x2="2848" y2="2208" stroke="#161b22" stroke-width="0.8" opacity="0.6"/>
+<line x1="1920" y1="1280" x2="992"  y2="2208" stroke="#161b22" stroke-width="0.8" opacity="0.6"/>
+
+<!-- radar sweep line -->
+<line x1="1920" y1="1280" x2="2780" y2="420" stroke="#58a6ff" stroke-width="2" opacity="0.5"/>
+<!-- sweep fill hint -->
+<path d="M1920 1280 L2780 420 A1000 1000 0 0 0 2680 320 Z" fill="#58a6ff" opacity="0.03"/>
+
+<!-- blip dots -->
+<circle cx="2300" cy="780"  r="10" fill="#ff7b72" opacity="0.9"/>
+<circle cx="2300" cy="780"  r="20" fill="none" stroke="#ff7b72" stroke-width="1" opacity="0.4"/>
+<circle cx="1600" cy="900"  r="7"  fill="#58a6ff" opacity="0.7"/>
+<circle cx="1600" cy="900"  r="14" fill="none" stroke="#58a6ff" stroke-width="1" opacity="0.3"/>
+<circle cx="2200" cy="1400" r="8"  fill="#3fb950" opacity="0.8"/>
+<circle cx="2200" cy="1400" r="16" fill="none" stroke="#3fb950" stroke-width="1" opacity="0.3"/>
+<circle cx="1540" cy="1500" r="6"  fill="#58a6ff" opacity="0.5"/>
+<circle cx="2500" cy="1200" r="5"  fill="#ff7b72" opacity="0.5"/>
+<circle cx="1700" cy="1100" r="4"  fill="#ffa657" opacity="0.6"/>
+<circle cx="2100" cy="680"  r="6"  fill="#58a6ff" opacity="0.4"/>
+<circle cx="1400" cy="1350" r="5"  fill="#3fb950" opacity="0.5"/>
+<circle cx="2350" cy="1650" r="4"  fill="#d2a8ff" opacity="0.6"/>
+
+<!-- blip labels -->
+<text x="2320" y="775" font-family="monospace" font-size="22" fill="#ff7b72" opacity="0.7">T1059</text>
+<text x="1620" y="895" font-family="monospace" font-size="22" fill="#58a6ff" opacity="0.6">192.168.1.44</text>
+<text x="2220" y="1395" font-family="monospace" font-size="22" fill="#3fb950" opacity="0.6">bluebox</text>
+
+<!-- corner brackets TL -->
+<polyline points="120,120 120,240 240,240" fill="none" stroke="#58a6ff" stroke-width="3"/>
+<!-- corner bracket TR -->
+<polyline points="3720,120 3720,240 3600,240" fill="none" stroke="#58a6ff" stroke-width="3"/>
+<!-- corner bracket BL -->
+<polyline points="120,2440 120,2320 240,2320" fill="none" stroke="#58a6ff" stroke-width="3"/>
+<!-- corner bracket BR -->
+<polyline points="3720,2440 3720,2320 3600,2320" fill="none" stroke="#58a6ff" stroke-width="3"/>
+
+<!-- TL hud info -->
+<text x="150" y="180" font-family="monospace" font-size="28" fill="#3d444d" letter-spacing="2">SOC ANALYST</text>
+<text x="150" y="220" font-family="monospace" font-size="24" fill="#3d444d" letter-spacing="2">BLUE TEAM</text>
+
+<!-- TR hud info -->
+<text x="3690" y="180" text-anchor="end" font-family="monospace" font-size="28" fill="#3d444d" letter-spacing="2">bluebox</text>
+<text x="3690" y="220" text-anchor="end" font-family="monospace" font-size="24" fill="#58a6ff" opacity="0.5" letter-spacing="2">● ACTIVE</text>
+
+<!-- BL hud info -->
+<text x="150" y="2360" font-family="monospace" font-size="24" fill="#3d444d" letter-spacing="2">THREAT DETECTION</text>
+<text x="150" y="2400" font-family="monospace" font-size="22" fill="#3d444d" letter-spacing="1">MITRE ATT&amp;CK FRAMEWORK</text>
+
+<!-- BR hud info -->
+<text x="3690" y="2360" text-anchor="end" font-family="monospace" font-size="24" fill="#3d444d" letter-spacing="2">sentry</text>
+<text x="3690" y="2400" text-anchor="end" font-family="monospace" font-size="22" fill="#58a6ff" opacity="0.4" letter-spacing="1">◉ SCANNING</text>
+
+<!-- ring labels -->
+<text x="1928" y="1082" font-family="monospace" font-size="20" fill="#3d444d" opacity="0.6">200</text>
+<text x="1928" y="882"  font-family="monospace" font-size="20" fill="#3d444d" opacity="0.6">400</text>
+<text x="1928" y="682"  font-family="monospace" font-size="20" fill="#3d444d" opacity="0.6">600</text>
+
+<!-- center handle -->
+<text x="1920" y="1310" text-anchor="middle" font-family="monospace" font-size="120" font-weight="bold" fill="#cdd9e5" letter-spacing="20">fl4mys3c</text>
+<line x1="1220" y1="1340" x2="2620" y2="1340" stroke="#3d444d" stroke-width="1" opacity="0.6"/>
+<text x="1920" y="1390" text-anchor="middle" font-family="monospace" font-size="32" fill="#3d444d" letter-spacing="8">THREAT INTEL · IR · LOG ANALYSIS</text>
+
+</svg>

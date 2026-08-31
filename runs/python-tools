@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -e
+
+echo -e "\e[1;36m[python-tools] Installing Python CLI tools via pipx\e[0m"
+
+if ! command -v pipx >/dev/null 2>&1; then
+    echo "[python-tools] Installing pipx"
+    sudo apt install -y pipx
+    pipx ensurepath
+fi
+
+install() {
+    local name="$1"
+    local src="$2"
+
+    if pipx list 2>/dev/null | grep -q "$name"; then
+        echo "[python-tools] $name already installed"
+    else
+        echo "[python-tools] Installing $name"
+        pipx install --include-deps "$src"
+    fi
+}
+
+# ---- Detection / DFIR ----
+install sigma-cli sigma-cli
+install oletools oletools
+install flare-floss flare-floss
+install flare-capa flare-capa
+install pysigma pysigma
+install impacket impacket
+
+# ---- AD / Blue Team ----
+install certipy-ad git+https://github.com/ly4k/Certipy.git
+install bloodhound-ce git+https://github.com/dirkjanm/BloodHound.py.git@bloodhound-ce
+
+echo -e "\e[1;32m[python-tools] DONE\e[0m"

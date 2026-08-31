@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -e
+
+cyan="\e[1;36m"
+reset="\e[0m"
+
+status() {
+    echo -e "\n${cyan}[tmux]${reset} ${cyan}$1${reset}"
+}
+
+TMUX_CONF="$HOME/.tmux.conf"
+PLUGINS_DIR="$HOME/.tmux/plugins"
+TPM_DIR="$PLUGINS_DIR/tpm"
+
+# ---------------------------------------------------
+# Install tmux
+# ---------------------------------------------------
+status "Installing tmux"
+sudo apt update
+sudo apt install -y tmux git
+
+# ---------------------------------------------------
+# Sanity check: tmux.conf must exist
+# ---------------------------------------------------
+if [[ ! -f "$TMUX_CONF" ]]; then
+    echo "[ERROR] ~/.tmux.conf not found"
+    echo "        Aborting to avoid broken TPM state"
+    exit 1
+fi
+
+# ---------------------------------------------------
+# Install TPM
+# ---------------------------------------------------
+if [[ ! -d "$TPM_DIR" ]]; then
+    status "Cloning TPM"
+    git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
+else
+    status "TPM already installed"
+fi
+
+# ---------------------------------------------------
+# Install tmux plugins (headless tmux)
+# ---------------------------------------------------
+if [[ ! -d "$PLUGINS_DIR/tmux-resurrect" ]]; then
+    status "Installing tmux plugins (headless tmux)"
+
+    tmux new-session -d -s __tpm_install || true
+    tmux source-file "$TMUX_CONF"
+
+    tmux send-keys -t __tpm_install \
+        "run-shell ~/.tmux/plugins/tpm/bin/install_plugins" C-m
+
+    sleep 2
+    tmux kill-session -t __tpm_install || true
+else
+    status "Tmux plugins already installed"
+fi
+
+status "Tmux setup complete"
+
+echo -e "\e[1;32m[tmux] DONE\e[0m"

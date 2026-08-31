@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+set -e
+
+cyan="\e[1;36m"
+reset="\e[0m"
+
+log() {
+    echo -e "\n${cyan}[dev]${reset} ${cyan}$1${reset}"
+}
+
+# -----------------------------
+# Base build tools
+# -----------------------------
+log "Base build tools"
+sudo apt update
+sudo apt install -y \
+  build-essential \
+  curl \
+  git \
+  wget \
+  ca-certificates \
+  gnupg \
+  lsb-release \
+  unzip
+
+# -----------------------------
+# Core packages
+# -----------------------------
+log "Core packages"
+sudo apt install -y \
+  gimp \
+  tldr \
+  golang \
+  fzf \
+  rofi \
+  btop \
+  bc \
+  nodejs \
+  npm \
+  ffmpeg \
+  dosfstools \
+  arp-scan \
+  avahi-daemon \
+  avahi-utils \
+  love \
+  fonts-font-awesome \
+  fonts-jetbrains-mono \
+  waybar || true
+
+
+# -----------------------------
+# Go tools
+# -----------------------------
+log "Go tools"
+export PATH="$PATH:/usr/local/go/bin:$HOME/go/bin"
+
+if ! command -v air >/dev/null; then
+    go install github.com/air-verse/air@latest
+fi
+
+# -----------------------------
+# Nerd Fonts
+# -----------------------------
+log "Nerd Fonts"
+FONT_DIR="$HOME/.local/share/fonts"
+mkdir -p "$FONT_DIR"
+
+if ! fc-list | grep -q "JetBrainsMono Nerd"; then
+    cd "$FONT_DIR"
+    wget -q https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip
+    wget -q https://github.com/ryanoasis/nerd-fonts/releases/latest/download/NerdFontsSymbolsOnly.zip
+    unzip -o JetBrainsMono.zip
+    unzip -o NerdFontsSymbolsOnly.zip
+    fc-cache -fv
+fi
+
+echo -e "\e[1;32m[dev DONE]\e[0m"

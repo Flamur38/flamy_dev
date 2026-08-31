@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -e
+
+# -------------------------
+# GPU Fan Curve — NVIDIA
+# Installs the fan curve daemon and systemd service.
+# Requires: nvidia driver + pynvml
+# -------------------------
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DEV_ENV="${DEV_ENV:-$(dirname "$script_dir")}"
+
+echo "==> [gpu-fan] Installing NVIDIA fan curve daemon..."
+
+# -------------------------
+# 1. Install pynvml
+# -------------------------
+echo "==> [gpu-fan] Installing nvidia-ml-py..."
+pip install nvidia-ml-py --break-system-packages --quiet
+
+# -------------------------
+# 2. Install the daemon script
+# -------------------------
+echo "==> [gpu-fan] Installing gpu-fan-curve.py to /usr/local/bin..."
+sudo cp "$DEV_ENV/resources/gpu-fan-curve.py" /usr/local/bin/gpu-fan-curve.py
+sudo chmod +x /usr/local/bin/gpu-fan-curve.py
+
+# -------------------------
+# 3. Install the systemd service
+# -------------------------
+echo "==> [gpu-fan] Installing systemd service..."
+sudo cp "$DEV_ENV/resources/gpu-fan-curve.service" /etc/systemd/system/gpu-fan-curve.service
+
+# -------------------------
+# 4. Enable and start the service
+# -------------------------
+echo "==> [gpu-fan] Enabling and starting gpu-fan-curve service..."
+sudo systemctl daemon-reload
+sudo systemctl enable gpu-fan-curve
+sudo systemctl restart gpu-fan-curve
+
+echo "==> [gpu-fan] Done! Fan curve daemon is running."
+echo "    Logs: sudo journalctl -u gpu-fan-curve -f"
+echo "    Edit fan curve: sudo nano /usr/local/bin/gpu-fan-curve.py"
+echo "    Then restart:   sudo systemctl restart gpu-fan-curve"

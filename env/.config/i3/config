@@ -1,0 +1,278 @@
+# i3 CONFIG — SOC / IR WORKSTATION
+# ==========================================================
+# WM: i3-gaps
+# Mod: Alt
+# Style: Calm, low-noise, SOC-aligned
+# ==========================================================
+
+set $modkey Mod1
+font pango:JetBrainsMono Nerd Font 25
+floating_modifier $modkey
+
+# ==========================================================
+# DIRECTION KEYS (vim-style)
+# ==========================================================
+set $up k
+set $down j
+set $left h
+set $right l
+
+# ==========================================================
+# COLORS — fl4my cold palette
+# ==========================================================
+set $bg        #0d1117
+set $bg-alt    #161b22
+set $fg        #cdd9e5
+set $fg-muted  #3d444d
+set $accent    #58a6ff
+set $dim       #21262d
+
+# ==========================================================
+# WINDOW COLORS
+# ==========================================================
+client.focused          $accent   $bg-alt   $fg       $accent
+client.focused_inactive $fg-muted $bg       $fg-muted $fg-muted
+client.unfocused        $fg-muted $bg       $fg-muted $fg-muted
+client.urgent           $accent   $bg-alt   $fg       $accent
+
+# ==========================================================
+# APPLICATION LAUNCHERS
+# ==========================================================
+bindsym $modkey+Return exec --no-startup-id terminator
+bindsym $modkey+d exec --no-startup-id rofi -show run
+bindsym $modkey+q kill
+bindsym $modkey+Shift+period exec /usr/bin/flameshot gui
+
+# ==========================================================
+# QUICK LAUNCH (Alt+Ctrl)
+# ==========================================================
+bindsym $modkey+ctrl+1 exec --no-startup-id firefox
+bindsym $modkey+ctrl+2 exec --no-startup-id nautilus
+bindsym $modkey+ctrl+0 exec --no-startup-id terminator -e 'msfconsole'
+
+# ==========================================================
+# VOLUME CONTROL (PipeWire / pactl)
+# Step: 5% · OSD via dunst notify-send
+# ==========================================================
+bindsym XF86AudioRaiseVolume exec --no-startup-id \
+    pactl set-sink-volume @DEFAULT_SINK@ +5% && \
+    notify-send -t 1000 -h string:x-dunst-stack-tag:volume \
+    "Volume" "$(pactl get-sink-volume @DEFAULT_SINK@ | grep -oP '\d+%' | head -1)"
+
+bindsym XF86AudioLowerVolume exec --no-startup-id \
+    pactl set-sink-volume @DEFAULT_SINK@ -5% && \
+    notify-send -t 1000 -h string:x-dunst-stack-tag:volume \
+    "Volume" "$(pactl get-sink-volume @DEFAULT_SINK@ | grep -oP '\d+%' | head -1)"
+
+bindsym XF86AudioMute exec --no-startup-id \
+    pactl set-sink-mute @DEFAULT_SINK@ toggle && \
+    notify-send -t 1000 -h string:x-dunst-stack-tag:volume \
+    "Volume" "$(pactl get-sink-mute @DEFAULT_SINK@ | grep -oP '(yes|no)')"
+
+bindsym XF86AudioMicMute exec --no-startup-id \
+    pactl set-source-mute @DEFAULT_SOURCE@ toggle && \
+    notify-send -t 1000 -h string:x-dunst-stack-tag:mic \
+    "Mic" "$(pactl get-source-mute @DEFAULT_SOURCE@ | grep -oP '(yes|no)')"
+
+# Alt fallback keybindings (for keyboards without media keys)
+bindsym $modkey+F1 exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle
+bindsym $modkey+F2 exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -5%
+bindsym $modkey+F3 exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +5%
+
+# ==========================================================
+# MEDIA KEYS (playerctl)
+# ==========================================================
+bindsym XF86AudioPlay  exec --no-startup-id playerctl play-pause
+bindsym XF86AudioPause exec --no-startup-id playerctl pause
+bindsym XF86AudioNext  exec --no-startup-id playerctl next
+bindsym XF86AudioPrev  exec --no-startup-id playerctl previous
+
+# ==========================================================
+# FAN CONTROL MODE (MS01 — NCT6798D via hwmon5/pwm1)
+# ==========================================================
+set $mode_fan Fan: (s) status, (f) full speed, (a) auto restore
+mode "$mode_fan" {
+    bindsym s exec --no-startup-id \
+        notify-send -t 6000 -h string:x-dunst-stack-tag:fan \
+        "Thermal status" \
+        "CPU: $(sensors | grep 'Package id 0' | awk '{print $4}')\nCPUTIN: $(sensors | grep 'CPUTIN' | awk '{print $2}')\nFan1: $(sensors | grep '^fan1' | awk '{print $2, $3}')\nFan2: $(sensors | grep '^fan2' | awk '{print $2, $3}')", \
+        mode "default"
+
+    bindsym f exec --no-startup-id \
+        pkexec bash -c 'echo 1 > /sys/class/hwmon/hwmon5/pwm1_enable && echo 255 > /sys/class/hwmon/hwmon5/pwm1' && \
+        notify-send -t 2000 -h string:x-dunst-stack-tag:fan \
+        "Fan" "Full speed — 100% PWM", \
+        mode "default"
+
+    bindsym a exec --no-startup-id \
+        pkexec bash -c 'echo 0 > /sys/class/hwmon/hwmon5/pwm1_enable' && \
+        notify-send -t 2000 -h string:x-dunst-stack-tag:fan \
+        "Fan" "Auto — firmware control restored", \
+        mode "default"
+
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $modkey+Shift+t mode "$mode_fan"
+
+# ==========================================================
+# FOCUS & MOVE
+# ==========================================================
+bindsym $modkey+$left  focus left
+bindsym $modkey+$right focus right
+bindsym $modkey+$up    focus up
+bindsym $modkey+$down  focus down
+
+bindsym $modkey+Shift+$left  move left
+bindsym $modkey+Shift+$right move right
+bindsym $modkey+Shift+$up    move up
+bindsym $modkey+Shift+$down  move down
+
+# ==========================================================
+# LAYOUTS & CONTAINERS
+# ==========================================================
+bindsym $modkey+Shift+f fullscreen toggle
+bindsym $modkey+s layout stacking
+bindsym $modkey+w layout tabbed
+bindsym $modkey+e layout toggle split
+
+bindsym $modkey+Shift+space floating toggle
+bindsym $modkey+space focus mode_toggle
+bindsym $modkey+a focus parent
+
+# ==========================================================
+# SCRATCHPAD
+# ==========================================================
+bindsym $modkey+Shift+minus move scratchpad
+bindsym $modkey+minus scratchpad show
+
+# ==========================================================
+# WORKSPACES
+# ==========================================================
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
+set $ws6 "6"
+set $ws7 "7"
+set $ws8 "8"
+set $ws9 "9"
+set $ws10 "10"
+
+# Monitor output assignments
+workspace $ws1 output DP-3
+workspace $ws2 output DP-3
+workspace $ws3 output DP-3
+workspace $ws4 output DP-3
+workspace $ws5 output DP-3
+workspace $ws6 output HDMI-1
+workspace $ws7 output HDMI-1
+workspace $ws8 output HDMI-1
+workspace $ws9 output HDMI-1
+workspace $ws10 output HDMI-1
+
+bindsym $modkey+1 workspace $ws1
+bindsym $modkey+2 workspace $ws2
+bindsym $modkey+3 workspace $ws3
+bindsym $modkey+4 workspace $ws4
+bindsym $modkey+5 workspace $ws5
+bindsym $modkey+6 workspace $ws6
+bindsym $modkey+7 workspace $ws7
+bindsym $modkey+8 workspace $ws8
+bindsym $modkey+9 workspace $ws9
+bindsym $modkey+0 workspace $ws10
+
+bindsym $modkey+Shift+1 move container to workspace $ws1
+bindsym $modkey+Shift+2 move container to workspace $ws2
+bindsym $modkey+Shift+3 move container to workspace $ws3
+bindsym $modkey+Shift+4 move container to workspace $ws4
+bindsym $modkey+Shift+5 move container to workspace $ws5
+bindsym $modkey+Shift+6 move container to workspace $ws6
+bindsym $modkey+Shift+7 move container to workspace $ws7
+bindsym $modkey+Shift+8 move container to workspace $ws8
+bindsym $modkey+Shift+9 move container to workspace $ws9
+bindsym $modkey+Shift+0 move container to workspace $ws10
+
+# ==========================================================
+# RESIZE MODE
+# ==========================================================
+mode "resize" {
+    bindsym $left  resize shrink width  12 px or 12 ppt
+    bindsym $right resize grow   width  12 px or 12 ppt
+    bindsym $up    resize shrink height 12 px or 12 ppt
+    bindsym $down  resize grow   height 12 px or 12 ppt
+
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $modkey+r mode "resize"
+
+# ==========================================================
+# BAR — polybar (replaces i3status)
+# ==========================================================
+exec_always --no-startup-id ~/.config/polybar/launch.sh
+bindsym $modkey+m exec --no-startup-id polybar-msg cmd toggle
+
+# ==========================================================
+# GAPS
+# ==========================================================
+gaps inner 10
+gaps outer 0
+smart_gaps on
+
+# ==========================================================
+# SYSTEM MODE
+# ==========================================================
+set $Locker i3lock -d -c 0d1117 -f
+
+set $mode_system System (l) lock, (e) logout, (s) suspend, (r) reboot
+mode "$mode_system" {
+    bindsym l exec --no-startup-id $Locker, mode "default"
+    bindsym e exec --no-startup-id i3-msg exit, mode "default"
+    bindsym s exec --no-startup-id systemctl suspend, mode "default"
+    bindsym r exec --no-startup-id systemctl reboot, mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $modkey+Shift+e mode "$mode_system"
+
+# ==========================================================
+# WINDOW DECORATIONS
+# ==========================================================
+new_window pixel 1
+new_float pixel 1
+
+# ==========================================================
+# WINDOW RULES
+# ==========================================================
+for_window [class="Terminator"] fullscreen enable
+for_window [class="Terminator"] floating disable
+
+# ==========================================================
+# I3 MAINTENANCE
+# ==========================================================
+bindsym $modkey+Shift+c reload, exec notify-send "i3" "Configuration reloaded"
+bindsym $modkey+Shift+r restart, exec notify-send "i3" "i3 restarted"
+
+# ==========================================================
+# AUTOSTART
+# ==========================================================
+exec --no-startup-id picom
+exec --no-startup-id nm-applet
+exec --no-startup-id flameshot
+exec --no-startup-id numlockx on
+exec --no-startup-id feh --bg-scale ~/Pictures/pics/fl4mys3c_cheatsheet_v2.svg \
+                         --bg-scale ~/Pictures/pics/flamy.jpg
+exec --no-startup-id xrandr --output DP-3 --primary --mode 3840x2560 --rotate normal --pos 0x0 --output HDMI-1 --mode 1920x1080 --rotate left --scale 2x2 --pos 3840x0
+                      
+# exec --no-startup-id vmware-user
+
+# Disable screen blanking
+exec --no-startup-id xset s off
+exec --no-startup-id xset s noblank
+exec --no-startup-id xset -dpms
+
+# Google Drive
+exec --no-startup-id rclone mount gdrive: ~/GoogleDrive --vfs-cache-mode writes --daemon
+
+

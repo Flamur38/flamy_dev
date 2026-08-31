@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+# Run this script before running the ./run 
+
+set -e
+
+echo "[+] Updating system"
+sudo apt update -y
+
+echo "[+] Ensuring git is installed"
+if ! command -v git >/dev/null; then
+    sudo apt install -y git
+fi
+
+DEV_DIR="$HOME/personal/dev"
+
+echo "[+] Preparing workspace"
+mkdir -p "$HOME/personal"
+
+if [ ! -d "$DEV_DIR" ]; then
+    git clone https://github.com/Flamur38/dev "$DEV_DIR"
+else
+    echo "[!] Repo already exists, pulling updates"
+    git -C "$DEV_DIR" pull
+fi
+
+echo "[+] Running dev environment installer"
+cd "$DEV_DIR"
+chmod +x run
+./run

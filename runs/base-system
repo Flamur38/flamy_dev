@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+set -e
+
+GREEN="\e[1;32m"
+CYAN="\e[1;36m"
+RESET="\e[0m"
+PREFIX="base-system"
+
+
+
+log() {
+  echo -e "\n${CYAN}[${PREFIX}]${RESET} ${CYAN}$1${RESET}"
+}
+
+
+# ----------------------------------------
+# Update apt cache
+# ----------------------------------------
+log "Updating apt cache"
+sudo apt update
+
+# ----------------------------------------
+# Install essential base packages
+# ----------------------------------------
+log "Installing base system packages"
+sudo apt install -y \
+  curl \
+  wget \
+  git \
+  ca-certificates \
+  build-essential \
+  unzip \
+  gnupg \
+  lsb-release \
+  python3 \
+  python3-pip \
+  htop \
+  dirb \
+  rdesktop \
+  nodejs \
+  ripgrep \
+  fd-find \
+  xclip \
+  flameshot \
+  feh \
+  picom \
+  arandr \
+  tshark \
+  polybar \
+  tree \
+  vim-gtk3 \
+  stow \
+
+# ----------------------------------------
+# Timezone
+# ----------------------------------------
+TIMEZONE="Europe/Zurich"
+log "Setting timezone to $TIMEZONE"
+sudo timedatectl set-timezone "$TIMEZONE"
+
+# ----------------------------------------
+# Locale
+# ----------------------------------------
+LOCALE="en_US.UTF-8"
+log "Generating locale $LOCALE"
+sudo locale-gen "$LOCALE"
+
+log "Setting system locale"
+sudo localectl set-locale LANG="$LOCALE"
+
+log "Base system configuration completed"
+
+echo -e "\e[1;32m[base-system DONE]\e[0m"

@@ -1,0 +1,12 @@
+[Unit]
+Description=NVIDIA GPU Fan Curve Daemon
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/local/bin/gpu-fan-curve.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

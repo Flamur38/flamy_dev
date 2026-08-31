@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+set -e
+
+# ---- colors ----
+cyan="\e[1;36m"
+yellow="\e[1;33m"
+reset="\e[0m"
+
+PREFIX="zeek"
+
+log() {
+  echo -e "\n${cyan}[${PREFIX}]${reset} ${cyan}$1${reset}"
+}
+
+warn() {
+  echo -e "${yellow}[${PREFIX}]${reset} ${yellow}$1${reset}"
+}
+
+# ----------------------------------------
+# Detect Ubuntu version
+# ----------------------------------------
+. /etc/os-release
+UBUNTU_VERSION="${VERSION_ID}"  # e.g. "24.04" or "22.04"
+
+log "Detected Ubuntu $UBUNTU_VERSION"
+
+OBS_BASE="https://download.opensuse.org/repositories/security:/zeek"
+
+case "$UBUNTU_VERSION" in
+  24.04) REPO_URL="${OBS_BASE}/xUbuntu_24.04/" ;;
+  22.04) REPO_URL="${OBS_BASE}/xUbuntu_22.04/" ;;
+  *)
+    warn "Ubuntu $UBUNTU_VERSION not tested — defaulting to 24.04 repo URL"
+    REPO_URL="${OBS_BASE}/xUbuntu_24.04/"
+    ;;
+esac
+
+# ----------------------------------------
+# Add OBS repo + GPG key
+# ----------------------------------------
+log "Adding Zeek OBS repository"
+
+echo "deb ${REPO_URL} /" \
+  | sudo tee /etc/apt/sources.list.d/security:zeek.list > /dev/null
+
+curl -fsSL "${REPO_URL}Release.key" \
+  | gpg --dearmor \
+  | sudo tee /etc/apt/trusted.gpg.d/security_zeek.gpg > /dev/null
+
+sudo apt-get update -q
+
+# ----------------------------------------
+# Install Zeek
+# ----------------------------------------
+log "Installing zeek-8.0"
+sudo apt-get install -y zeek-8.0
+
+# ----------------------------------------
+# PATH setup (idempotent)
+# ----------------------------------------
+ZEEK_BIN="/opt/zeek/bin"
+EXPORT_LINE="export PATH=\$PATH:${ZEEK_BIN}"
+
+for rc in "$HOME/.zshrc" "$HOME/.bashrc"; do
+  if [[ -f "$rc" ]] && ! grep -qF "$ZEEK_BIN" "$rc"; then
+    echo "$EXPORT_LINE" >> "$rc"
+    log "Added $ZEEK_BIN to PATH in $rc"
+  fi
+done
+
+export PATH="$PATH:$ZEEK_BIN"
+
+# ----------------------------------------
+# zeek-cut global symlink
+# ----------------------------------------
+log "Symlinking zeek-cut to /usr/local/bin"
+sudo ln -sf "${ZEEK_BIN}/zeek-cut" /usr/local/bin/zeek-cut
+
+# ----------------------------------------
+# Suppress mail notifications (homelab)
+# ----------------------------------------
+log "Disabling ZeekControl mail notifications"
+sudo sed -i 's/^MailTo =.*/MailTo =/g'                         /opt/zeek/etc/zeekctl.cfg
+sudo sed -i 's/^MailConnectionSummary =.*/MailConnectionSummary = 0/g' /opt/zeek/etc/zeekctl.cfg
+
+# ----------------------------------------
+# Cap: allow zeek to capture without root
+# ----------------------------------------
+log "Setting cap_net_raw on zeek binary"
+sudo setcap cap_net_raw,cap_net_admin=eip "${ZEEK_BIN}/zeek"
+
+# ----------------------------------------
+# Done
+# ----------------------------------------
+warn "Configure your interface in: /opt/zeek/etc/node.cfg  (interface=)"
+warn "Configure local networks in: /opt/zeek/etc/networks.cfg"
+warn "Then run: sudo zeekctl deploy"
+warn "Logs live at: /opt/zeek/logs/current/"
+
+echo -e "\e[1;32m[zeek] DONE\e[0m"

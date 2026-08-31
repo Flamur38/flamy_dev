@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+set -e  # Abort immediately if any command returns a non-zero exit code (fail fast)
+
+# -------------------------
+# DRY-RUN SUPPORT
+# -------------------------
+# Pass --dry as the first argument to preview what would happen without
+# actually touching the filesystem. Useful before running on a fresh machine.
+dry_run="0"
+[[ "$1" == "--dry" ]] && dry_run="1"
+
+# log() wraps echo — prefixes "[DRY_RUN]" when in preview mode,
+# plain output otherwise.
+log() {
+    [[ "$dry_run" == "1" ]] && echo "[DRY_RUN] $*" || echo "$*"
+}
+
+# -------------------------
+# PATH / ENV SETUP
+# -------------------------
+# XDG_CONFIG_HOME is the standard Linux location for user config files (~/.config).
+# We respect the env var if already set, otherwise fall back to ~/.config.
+XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+
+# Resolve the absolute path of this script, regardless of where it's called from.
+# BASH_SOURCE[0] is the script file itself (not the caller), so this is safe
+# even when the script is sourced or symlinked.
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# DEV_ENV points to the root of this repo.
+# Allows overriding via environment variable (e.g. DEV_ENV=/opt/dev ./dev-env).
+# Defaults to the directory this script lives in.
+DEV_ENV="${DEV_ENV:-$script_dir}"
+export DEV_ENV  # Export so any child scripts/processes can also reference it
+
+log "DEV_ENV = $DEV_ENV"
+log "XDG_CONFIG_HOME = $XDG_CONFIG_HOME"
+
+# -------------------------
+# SYNC A DIRECTORY TREE
+# -------------------------
+# sync_tree src dst
+#
+# Copies every top-level item inside $src into $dst.
+# Each item is deleted from $dst first to ensure a clean, idempotent sync
+# (running the script twice gives the same result as running it once).
+#
+# Example:
+#   sync_tree env/.config ~/.config
+#   → env/.config/i3   becomes  ~/.config/i3
+#   → env/.config/nvim becomes  ~/.config/nvim
+# -------------------------
+sync_tree() {
+    local src="$1"
+    local dst="$2"
+    log "Syncing $src → $dst"
+
+    mkdir -p "$dst"  # Create destination if it doesn't exist yet
+
+    # dotglob  → glob patterns like * also match hidden files/dirs (dot-files)
+    # nullglob → if nothing matches *, expand to empty string instead of literal "*"
+    shopt -s dotglob nullglob
+
+    for item in "$src"/*; do
+        local name="$(basename "$item")"   # e.g. "i3", ".bashrc", "nvim"
+        local target="$dst/$name"          # full path at destination
+
+        # Remove the existing destination item first (idempotent wipe)
+        log "  rm -rf $target"
+        [[ "$dry_run" == "0" ]] && rm -rf "$target"
+
+        # Copy the source item (file or directory) to destination.
+        # -a = archive mode: preserves permissions, timestamps, symlinks, recursion.
+        log "  copy $item → $dst"
+        [[ "$dry_run" == "0" ]] && cp -a "$item" "$dst/"
+    done
+
+    # Always restore shell options after using shopt — failing to do this
+    # can silently break glob behaviour in the rest of the script.
+    shopt -u dotglob nullglob
+}
+
+# -------------------------
+# COPY A SINGLE FILE
+# -------------------------
+# copy_file src dst
+#
+# Copies a single file to a specific destination path.
+# Creates any missing parent directories automatically.
+# -f = force overwrite if the destination already exists.
+# -------------------------
+copy_file() {
+    local src="$1"
+    local dst="$2"
+    log "Copy $src → $dst"
+    mkdir -p "$(dirname "$dst")"  # Ensure the parent directory exists
+    [[ "$dry_run" == "0" ]] && cp -f "$src" "$dst"
+}
+
+# -------------------------
+# EXECUTION — what actually runs
+# -------------------------
+
+# Sync config directories into ~/.config (nvim, i3, alacritty, etc.)
+sync_tree "$DEV_ENV/env/.config" "$XDG_CONFIG_HOME"
+
+# Sync ~/.local (scripts, bin files, share data, etc.)
+sync_tree "$DEV_ENV/env/.local" "$HOME/.local"
+
+# Sync wallpapers/pictures into ~/Pictures
+sync_tree "$DEV_ENV/env/Pictures" "$HOME/Pictures"
+
+# Sync custom tools (email_tools, etc.) into ~/tools
+sync_tree "$DEV_ENV/env/tools" "$HOME/tools"
+
+# Copy individual shell config files directly to $HOME.
+# These are single files, not directories, so copy_file is used instead of sync_tree.
+copy_file "$DEV_ENV/env/.zsh_profile"   "$HOME/.zsh_profile"   # zsh login shell config
+copy_file "$DEV_ENV/env/.zshrc"         "$HOME/.zshrc"         # zsh interactive shell config
+copy_file "$DEV_ENV/env/.xprofile"      "$HOME/.xprofile"      # X11 session env vars (runs at login)
+copy_file "$DEV_ENV/env/.tmux.conf"     "$HOME/.tmux.conf"     # tmux keybinds & appearance
+copy_file "$DEV_ENV/env/.bashrc"        "$HOME/.bashrc"        # bash interactive shell config
+copy_file "$DEV_ENV/env/.bash_profile"  "$HOME/.bash_profile"  # bash login shell config
+copy_file "$DEV_ENV/env/.bash_aliases"  "$HOME/.bash_aliases"  # bash aliases (usually sourced by .bashrc)
+copy_file "$DEV_ENV/env/.Xresources"   "$HOME/.Xresources"     # X11 resource settings (DPI, fonts, colors)
+copy_file "$DEV_ENV/env/.xinitrc"      "$HOME/.xinitrc"        # X11 startup script (runs startx)
+copy_file "$DEV_ENV/env/.vimrc"      "$HOME/.vimrc"            # vimrc config needed one file form base vim-gtk
+
+# Install this script itself into ~/.local/scripts so it's accessible from $PATH
+# on the new machine without needing the repo to be in a specific location.
+copy_file "$DEV_ENV/dev-env" "$HOME/.local/scripts/dev-env"

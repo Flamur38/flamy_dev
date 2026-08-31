@@ -1,0 +1,53 @@
+-- return {
+--     "MeanderingProgrammer/render-markdown.nvim",
+--     dependencies = { "nvim-treesitter/nvim-treesitter" },
+--     ft = { "markdown" },
+--     config = function()
+--         require("render-markdown").setup({
+--             heading = {
+--                 sign = false,
+--                 icons = { "# ", "## ", "### ", "#### ", "##### ", "###### " },
+--             },
+--             code = {
+--                 sign = false,
+--                 width = "full",
+--                 border = "thin",
+--             },
+--             checkbox = {
+--                 unchecked = { icon = "󰄱 " },
+--                 checked = { icon = "󰱒 " },
+--             },
+--             bullet = {
+--                 icons = { "●", "○", "◆", "◇" },
+--             },
+--         })
+--
+--         -- heading backgrounds — none, let terminal bg show
+--         for i = 1, 6 do
+--             vim.api.nvim_set_hl(0, "RenderMarkdownH" .. i .. "Bg", { bg = "none" })
+--         end
+--
+--         -- heading foregrounds — cycle through palette colors
+--         vim.api.nvim_set_hl(0, "RenderMarkdownH1", { fg = "#76b28f", bold = true })  -- green
+--         vim.api.nvim_set_hl(0, "RenderMarkdownH2", { fg = "#b07bc4", bold = true })  -- purple
+--         vim.api.nvim_set_hl(0, "RenderMarkdownH3", { fg = "#D8A06A", bold = true })  -- orange
+--         vim.api.nvim_set_hl(0, "RenderMarkdownH4", { fg = "#3E7580", bold = true })  -- teal
+--         vim.api.nvim_set_hl(0, "RenderMarkdownH5", { fg = "#76b28f", bold = true })  -- green again
+--         vim.api.nvim_set_hl(0, "RenderMarkdownH6", { fg = "#855492", bold = true })  -- dim purple
+--
+--         -- code blocks — slightly lighter than bg, stays in navy family
+--         vim.api.nvim_set_hl(0, "RenderMarkdownCode",       { bg = "#1e1f35" })       -- dim navy
+--         vim.api.nvim_set_hl(0, "RenderMarkdownCodeInline", { bg = "#1e1f35" })       -- same
+--
+--         -- bullets — green to match fg
+--         vim.api.nvim_set_hl(0, "RenderMarkdownBullet",     { fg = "#76b28f" })
+--
+--         -- checkboxes
+--         vim.api.nvim_set_hl(0, "RenderMarkdownChecked",    { fg = "#76b28f" })       -- green when done
+--         vim.api.nvim_set_hl(0, "RenderMarkdownUnchecked",  { fg = "#2a2b45" })       -- dim when pending
+--
+--         -- horizontal rule / divider
+--         vim.api.nvim_set_hl(0, "RenderMarkdownDash",       { fg = "#3E7580" })       -- teal
+--     end,
+-- }
+--

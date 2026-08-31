@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+set -e  # Fail immediately on any error
+
+# Resolve absolute path of this script.
+# &>/dev/null suppresses both stdout and stderr from the cd command.
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
+# -------------------------
+# DEV_ENV SETUP
+# -------------------------
+# If DEV_ENV wasn't already set in the environment, default it to
+# the directory containing this script (the repo root).
+if [[ -z "$DEV_ENV" ]]; then
+    DEV_ENV="$script_dir"
+fi
+export DEV_ENV  # Export so child scripts in runs/ can reference it
+
+# -------------------------
+# ARGUMENT PARSING
+# -------------------------
+# grep  → optional filter string; only run scripts whose filename matches it
+# dry_run → if "1", preview mode: log what would run, but don't execute
+grep=""
+dry_run="0"
+
+while [[ $# -gt 0 ]]; do
+    echo "ARG: \"$1\""  # Debug: print each argument as it's parsed
+    case "$1" in
+        --dry|--dry-run)
+            dry_run="1"
+            ;;
+        *)
+            # Any other argument is treated as a grep filter.
+            # Example: ./run terminal  → only runs the "terminal" script
+            grep="$1"
+            ;;
+    esac
+    shift  # Move to the next argument
+done
+
+# -------------------------
+# LOGGING
+# -------------------------
+log() {
+    if [[ "$dry_run" == "1" ]]; then
+        echo "[DRY_RUN] $1"
+    else
+        echo "$1"
+    fi
+}
+
+log "RUN: env: $DEV_ENV -- grep: $grep"
+
+# -------------------------
+# DISCOVER & EXECUTE RUN SCRIPTS
+# -------------------------
+# Find all *executable files* directly inside the runs/ directory.
+# -mindepth 1 -maxdepth 1 → only direct children, no subdirectories
+# -type f                  → files only (not dirs or symlinks)
+# -executable              → must have execute bit set (chmod +x)
+runs_dir=$(find "$script_dir/runs" -mindepth 1 -maxdepth 1 -type f -executable)
+
+for s in $runs_dir; do
+    name="$(basename "$s")"  # e.g. "terminal", "neovim", "zsh"
+
+    # If a grep filter was given, skip scripts that don't match it.
+    # grep -q = quiet mode (no output, just exit code).
+    if [[ -n "$grep" ]] && ! echo "$name" | grep -q "$grep"; then
+        log "grep \"$grep\" filtered out $s"
+        continue  # Skip to next script
+    fi
+
+    log "running script: $s"
+
+    # Execute the matched script (skipped in dry-run mode).
+    if [[ "$dry_run" == "0" ]]; then
+        "$s"
+    fi
+
+    # If a grep filter matched, stop after the first match.
+    # This makes "./run terminal" run only "terminal", not "terminator" too.
+    # NOTE: currently "terminal" grep would still match "terminator" —
+    # consider using exact matching (name == grep) if that's a problem.
+    if [[ -n "$grep" ]]; then
+        break
+    fi
+done

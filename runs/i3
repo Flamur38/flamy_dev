@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -e
+
+log() { echo -e "\n\e[1;36m[i3]\e[0m \e[1;36m$1\e[0m"; }
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+log "Installing i3 and dependencies"
+sudo apt update
+sudo apt install -y \
+    i3 i3-wm i3lock \
+    polybar \
+    rofi \
+    feh picom dunst \
+    arandr \
+    lm-sensors acpi \
+    fonts-hack \
+    pavucontrol pulseaudio-utils \
+    numlockx \
+    playerctl \
+    xbacklight
+
+log "Removing i3status (replaced by polybar)"
+# sudo apt remove -y i3status 2>/dev/null || true
+
+log "Done"
+echo -e "\e[1;32m[i3] DONE\e[0m"

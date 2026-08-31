@@ -1,0 +1,14 @@
+! # 200% 192
+! # 150% 144
+! # 125% 120
+
+Xft.dpi: 192 
+Xft.antialias: true
+Xft.hinting: true
+Xft.hintstyle: hintslight
+Xft.rgba: rgb
+! Xcursor.size: 38
+
+! Xcursor.theme: Adwaita
+! Xcursor.size: 20
+

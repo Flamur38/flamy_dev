@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -e
+
+log() { echo -e "\n\e[1;36m[terminator]\e[0m \e[1;36m$1\e[0m"; }
+
+# ------------------------------------------
+# Resolve repo paths
+# ------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+CONF_SRC="$REPO_ROOT/env/.config/terminator/config"
+CONF_DST="$HOME/.config/terminator/config"
+
+# ------------------------------------------
+# Sanity check
+# ------------------------------------------
+[[ -f "$CONF_SRC" ]] || { echo "[!] Missing $CONF_SRC"; exit 1; }
+
+# ------------------------------------------
+# Install
+# ------------------------------------------
+log "Installing Terminator"
+sudo apt update
+sudo apt install -y terminator
+
+# ------------------------------------------
+# Deploy config
+# ------------------------------------------
+log "Deploying Terminator config"
+mkdir -p "$(dirname "$CONF_DST")"
+cp -f "$CONF_SRC" "$CONF_DST"
+
+log "Done — restart Terminator to apply changes"
+echo -e "\e[1;32m[terminator] DONE\e[0m"

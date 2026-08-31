@@ -1,0 +1,33 @@
+[global_config]
+[keybindings]
+[profiles]
+  [[default]]
+    visible_bell = True
+    icon_bell = False
+    cursor_fg_color = "#000000"
+    cursor_bg_color = "#aaaaaa"
+    cursor_color_default = False
+    font = JetBrains Mono 20
+    foreground_color = "#d1d7e2"
+    show_titlebar = False
+    use_system_font = False
+    scrollbar_position = hidden
+  [[green]]
+    visible_bell = True
+    icon_bell = False
+    cursor_fg_color = "#000000"
+    cursor_bg_color = "#aaaaaa"
+    cursor_color_default = False
+    font = JetBrains Mono 20
+    foreground_color = "#1aff1a"
+    show_titlebar = False
+    use_system_font = False
+[layouts]
+  [[default]]
+    [[[window0]]]
+      type = Window
+      parent = ""
+    [[[child1]]]
+      type = Terminal
+      parent = window0
+[plugins]

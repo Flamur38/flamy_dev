@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENV_DIR="$SCRIPT_DIR/../env"
+PROFILES_DIR="$ENV_DIR/.config/gnome-terminal"
+
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+info()    { echo -e "${GREEN}[gnome-terminal]${NC} $*"; }
+warn()    { echo -e "${YELLOW}[gnome-terminal]${NC} $*"; }
+error()   { echo -e "${RED}[gnome-terminal]${NC} $*"; exit 1; }
+
+# ── install ────────────────────────────────────────────────────────────────────
+if ! command -v gnome-terminal &>/dev/null; then
+    info "gnome-terminal not found — installing..."
+    sudo apt-get install -y gnome-terminal
+    info "gnome-terminal installed."
+else
+    info "gnome-terminal already installed — skipping."
+fi
+
+# ── helpers ────────────────────────────────────────────────────────────────────
+load_profile() {
+    local label="$1"
+    local file="$2"
+
+    [[ -f "$file" ]] || error "profile file not found: $file"
+
+    # create a new UUID for this profile
+    local uuid
+    uuid=$(uuidgen)
+    local base="/org/gnome/terminal/legacy/profiles:/:$uuid"
+
+    info "Loading profile '$label' → $uuid"
+    dconf load "$base/" < "$file"
+
+    # register UUID in the profiles list
+    local current
+    current=$(dconf read /org/gnome/terminal/legacy/profiles:/list 2>/dev/null || echo "[]")
+
+    if [[ "$current" == "[]" || -z "$current" ]]; then
+        dconf write /org/gnome/terminal/legacy/profiles:/list "['$uuid']"
+    else
+        # strip outer brackets, append new uuid
+        local inner="${current:1:${#current}-2}"
+        dconf write /org/gnome/terminal/legacy/profiles:/list "[$inner, '$uuid']"
+    fi
+
+    info "Profile '$label' registered."
+}
+
+# ── disable global menubar ─────────────────────────────────────────────────────
+dconf write /org/gnome/terminal/legacy/default-show-menubar false
+info "Global menubar disabled."
+
+# ── load profiles ──────────────────────────────────────────────────────────────
+load_profile "flamy"  "$PROFILES_DIR/flamy_terminal"
+load_profile "Ubuntu" "$PROFILES_DIR/ubuntu_terminal"
+
+info "Done — both profiles loaded."

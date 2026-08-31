@@ -1,0 +1,59 @@
+#!/usr/bin/env zsh
+
+[[ -n "$__ZSH_PROFILE_LOADED" ]] && return
+export __ZSH_PROFILE_LOADED=1
+
+# ============================================
+# ZSH PROFILE — environment & PATH only
+# ============================================
+
+# ---- XDG base dir (safe default) ----
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+
+# ---- Editor ----
+export EDITOR="nvim"
+export GIT_EDITOR="nvim"
+
+# ---- Language / tool env vars (only if used) ----
+export GOPATH="$HOME/.local/go"
+export DENO_INSTALL="$HOME/.deno"
+export N_PREFIX="$HOME/.local/n"
+
+# ---- Helper functions for PATH management ----
+# Add to PATH (end) only if missing
+addToPath() {
+    case ":$PATH:" in
+        *":$1:"*) ;;                 # already present → do nothing
+        *) PATH="$PATH:$1" ;;        # append
+    esac
+}
+
+# Add to PATH (front) only if missing
+addToPathFront() {
+    case ":$PATH:" in
+        *":$1:"*) ;;                 # already present → do nothing
+        *) PATH="$1:$PATH" ;;        # prepend
+    esac
+}
+
+# ---- PATH entries (ordered, no duplicates) ----
+addToPathFront "$HOME/.local/bin"
+addToPathFront "$HOME/.local/scripts"
+
+addToPathFront "$HOME/.local/n/bin"
+addToPathFront "$HOME/.deno/bin"
+
+addToPathFront "$HOME/.local/go/bin"
+addToPathFront "/usr/local/go/bin"
+
+addToPath "$HOME/.cargo/bin"
+
+# ---- Optional tools (only if they exist) ----
+addToPath "$HOME/personal/ghostty/zig-out/bin"
+
+# ---- fzf (safe optional source) ----
+[[ -f "$HOME/.fzf.zsh" ]] && source "$HOME/.fzf.zsh"
+
+# ---- Export final PATH ----
+export PATH
+
